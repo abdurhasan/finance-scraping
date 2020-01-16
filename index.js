@@ -1,52 +1,56 @@
-const Scraper = require('./lib/reksadana-manulife');
-const logger = process.env.DEBUG || true;
-const port = process.env.PORT || 3001;
-const fastify = require('fastify')({ logger });
-const schedule = require('node-schedule');
+const { creditPromoBankMage, mutualFundManulife } = require('./src/lib')
+const logger = process.env.DEBUG || false
+const port = process.env.PORT || 7000
+const fastify = require('fastify')({ logger })
+const CronJob = require('node-cron')
+const fs = require('fs')
 
-
-const getData = _ => {
-  return Scraper
-    .then(async data => {
-      // await asyncRedis.savedata('reksadana', JSON.stringify(data))
-        console.log(data)
-      // console.log('Scraper was successed')
-    })
-    .catch(_ => console.log('Scraper was an error'))
+const dataJsonDir = {
+  bankmega: 'CreditPromoBankMega.json',
+  manulife: 'MutualFundManulife.json'
 }
 
-getData()
 
-// schedule.scheduleJob('12 * * *', () => {
-//   getData()
-//   console.log('Data Reksadana was updated !')
-// });
+CronJob.schedule('0 12 * * *', () => {
+  creditPromoBankMage
+    .then(snap => console.log(snap))
+    .catch(err => console.log(err))
+  mutualFundManulife
+    .then(snap => console.log(snap))
+    .catch(err => console.log(err))
 
-
-// fastify.get('/', async (req, res) => {
-//   const template = `  
-//   <h1> Hallo ${req.ip}</h1>
-//   <h1>Get JSON : <a href="/json">here</a></h1>
-//   <h1>Download File : <a href="/download">here</a></h1>  
-//   `
-//   res.type('text/html').send(template)
-// })
-// fastify.get('/json', async (req, res) => {
-//   const reksadoc = await asyncRedis.getdata('reksadana');
-//   res.type('application/json').send(JSON.parse(reksadoc))
-
-// })
-// fastify.get('/download', async (req, res) => {
-//   let reksadoc = await asyncRedis.getdata('reksadana');
-//   // reksadoc = reksadoc.slice(0, -1).substr(1)
-//   res.type('application/octet').send(reksadoc)
-
-// })
+})
 
 
-// fastify.listen(port, (err, address) => {
-//   if (err) throw err
-//   fastify.log.info(`server listening on ${address}`)
-// })
+fastify.get('/', async (req, res) => {
+  const template = `  
+  <h1> Hallo ${req.ip}</h1>
+  <h2>Get JSON Promo Kredit Bank Mega: <a href="/json?search=bankmega">here</a></h2>
+  <h2>Get JSON Reksadana Manulife : <a href="/json?search=manulife">here</a></h2>
+  
+  `
+  res.type('text/html').send(template)
+})
+
+
+
+fastify.get('/json', (req, res) => {
+  const { search } = req.query
+
+  if (search) {
+    const jsonFile = JSON.parse(fs.readFileSync(process.cwd() + `/src/data/${dataJsonDir[search]}`, 'utf8'))
+    res.type('application/json').send(jsonFile)
+  } else {
+    res.type('application/json').send({ search: null })
+  }
+
+
+
+})
+
+fastify.listen(port, (err, address) => {
+  if (err) throw err
+  fastify.log.info(`server listening on ${address}`)
+})
 
 
