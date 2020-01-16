@@ -23,6 +23,6 @@ Personal exercise to improve scraping data skill with Node JS.
 
 Open for hiring :
 
-Linkedin :  https://www.linkedin.com/in/m-abdurrahim-hasan-367219144/
-CV       : httsp://abdurhasan.github.io/
+* Linkedin :  https://www.linkedin.com/in/m-abdurrahim-hasan-367219144/
+* CV       : httsp://abdurhasan.github.io/
 
